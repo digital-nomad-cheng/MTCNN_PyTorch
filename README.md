@@ -39,9 +39,9 @@ After we trained Pnet and Rnet, we can use Pnet and Rnet to generate data for tr
 ### Results
 |   Metrics   |  Pnet  |  Rnet |  Onet |
 | :---------: |:------:|:-----:|:-----:|
-|   cls loss  |  0.213 | 0.0004| 0.213 |
-| offset loss | 0.0001 | 0.0004| 0.0063|
-|   cls acc   | 0.0004 | 0.0005| 0.956 |
+|   cls loss  |  0.156 | 0.120| 0.129 |
+| offset loss |  0.01  | 0.01 | 0.0063|
+|   cls acc   |  0.944 | 0.962| 0.956 |
 
 ## Optimize MTCNN
 ### Lighter MTCNN
