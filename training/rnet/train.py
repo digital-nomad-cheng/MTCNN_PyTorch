@@ -31,8 +31,7 @@ dataloaders = {'train': torch.utils.data.DataLoader(train_data,
 # Set model
 model = RNet(is_train=True)
 model = model.to(device)
-
-#model.load_state_dict(torch.load(train_config.weights), strict=True)
+model.load_state_dict(torch.load('./pretrained_weights/best_rnet.pth'), strict=True)
 
 # Set checkpoint
 #checkpoint = CheckPoint(train_config.save_path)
