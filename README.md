@@ -37,7 +37,14 @@ After we trained Pnet and Rnet, we can use Pnet and Rnet to generate data for tr
     We use the validation dataset to help us with choose the best pnet model. The weights are saved in `pretrained_weights/best_onet.pth`
     
 ### Results
-|   Metrics   |  Pnet  |  Rnet |  Onet |
+
+|  WIDER FACE |  Pnet  |  Rnet |  Onet |
+| :---------: |:------:|:-----:|:-----:|
+|   cls loss  |  0.156 | 0.120| 0.129 |
+| offset loss |  0.01  | 0.01 | 0.0063|
+|   cls acc   |  0.944 | 0.962| 0.956 |
+
+| PRIVATE DATA|  Pnet  |  Rnet |  Onet |
 | :---------: |:------:|:-----:|:-----:|
 |   cls loss  |  0.156 | 0.120| 0.129 |
 | offset loss |  0.01  | 0.01 | 0.0063|
