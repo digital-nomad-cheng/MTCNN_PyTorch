@@ -14,7 +14,7 @@
 2. Training Pnet:
     RUN `python training/pnet/train.py` to train your model.
 3. Save weights:
-    We use the validation dataset to help us with choose the best pnet model. The weights are saved in `pretrained_weights/best_pnet.pth`
+    We use the validation dataset to help us with choose the best pnet model. The weights are saved in `pretrained_weights/mtcnn/best_pnet.pth`
 
 ### Train Rnet
 After we trained Pnet, we can use Pnet to generate data for training Rnet.
@@ -24,7 +24,7 @@ After we trained Pnet, we can use Pnet to generate data for training Rnet.
 2. Training Rnet:
     RUN `python training/rnet/train.py` to train your model.
 3. 3. Save weights:
-    We use the validation dataset to help us with choose the best pnet model. The weights are saved in `pretrained_weights/best_rnet.pth`
+    We use the validation dataset to help us with choose the best rnet model. The weights are saved in `pretrained_weights/mtcnn/best_rnet.pth`
     
 ### Train Onet
 After we trained Pnet and Rnet, we can use Pnet and Rnet to generate data for training Onet.
@@ -34,7 +34,7 @@ After we trained Pnet and Rnet, we can use Pnet and Rnet to generate data for tr
 2. Training Onet:
     RUN `python training/Onet/train.py` to train your model.
 3. 3. Save weights:
-    We use the validation dataset to help us with choose the best pnet model. The weights are saved in `pretrained_weights/best_onet.pth`
+    We use the validation dataset to help us with choose the best onet model. The weights are saved in `pretrained_weights/mtcnn/best_onet.pth`
     
 ### Results
 
