@@ -62,5 +62,5 @@ By combine shufflenet structure and mobilenet structure we can design light weig
 
 
 ## Todo
-[ ] Data Augmentation to avoid overfitting
+- [ ] Data Augmentation to avoid overfitting
 
