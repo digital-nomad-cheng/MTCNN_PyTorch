@@ -56,7 +56,7 @@ By combine shufflenet structure and mobilenet structure we can design light weig
 
 ### Prune MTCNN
 
-### Knowledge 
+### Knowledge Distillation
 
 ### Deploy MTCNN
 
