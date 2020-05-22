@@ -64,3 +64,7 @@ By combine shufflenet structure and mobilenet structure we can design light weig
 ## Todo
 - [ ] Data Augmentation to avoid overfitting
 
+## References
+1. https://github.com/xuexingyu24/MTCNN_Tutorial
+2. https://github.com/xuexingyu24/Pruning_MTCNN_MobileFaceNet_Using_Pytorch
+
