@@ -54,6 +54,8 @@ After we trained Pnet and Rnet, we can use Pnet and Rnet to generate data for tr
 ### Lighter MTCNN
 By combine shufflenet structure and mobilenet structure we can design light weight Pnet, Rnet, and Onet. In this way can can optimize the size of the model and at the same time decrease the inference speeed.
 
+### Larger Pnet
+
 ### Prune MTCNN
 
 ### Knowledge Distillation
