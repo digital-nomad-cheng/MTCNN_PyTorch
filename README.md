@@ -55,6 +55,7 @@ After we trained Pnet and Rnet, we can use Pnet and Rnet to generate data for tr
 By combine shufflenet structure and mobilenet structure we can design light weight Pnet, Rnet, and Onet. In this way can can optimize the size of the model and at the same time decrease the inference speeed.
 
 ### Larger Pnet
+According to my observation, small pnet brings many false positives which becomes a burden or rnet and onet. By increase the Pnet size, there will be less false positives and improve the overall efficiency.
 
 ### Prune MTCNN
 
