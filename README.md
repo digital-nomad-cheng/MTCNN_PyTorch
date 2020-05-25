@@ -6,7 +6,7 @@
    RUN `pyhon gen_dataset/transform_mat2txt.py`
    Change the mode variable in `transform_mat2txt.py` to `val` to generate val data label.
    
-## Train MTNN
+## Train MTCNN
 ### Train Pnet
 1. generate pnet training data:
     RUN `python gen_dataset/gen_Pnet_data.py`
