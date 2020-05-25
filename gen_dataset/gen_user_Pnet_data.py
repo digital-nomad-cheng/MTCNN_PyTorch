@@ -7,17 +7,16 @@ import cv2
 import os
 import numpy as np
 from tools.utils import*
-import config
 
 mode = 'val'
-net_size = config.PNET_SIZE
-prefix = ''
-anno_file = "./annotations/wider_anno_{}.txt".format(mode)
-im_dir = "./data/WIDER_train/images"
 
-pos_save_dir = "./data/{}/{}/positive".format(mode, net_size)
-part_save_dir = "./data/{}/{}/part".format(mode, net_size)
-neg_save_dir = "./data/{}/{}/negative".format(mode, net_size)
+prefix = ''
+anno_file = "./annotations/user_anno_{}.txt".format(mode)
+im_dir = "./data/user/images"
+
+pos_save_dir = "./data/{}/12/positive".format(mode)
+part_save_dir = "./data/{}/12/part".format(mode)
+neg_save_dir = "./data/{}/12/negative".format(mode)
 
 if not os.path.exists(pos_save_dir):
     os.makedirs(pos_save_dir)
@@ -27,9 +26,9 @@ if not os.path.exists(neg_save_dir):
     os.makedirs(neg_save_dir)
 
 # store labels of positive, negative, part images
-f1 = open(os.path.join('annotations', 'pos_{}_{}.txt'.format(net_size, mode)), 'w')
-f2 = open(os.path.join('annotations', 'neg_{}_{}.txt'.format(net_size, mode)), 'w')
-f3 = open(os.path.join('annotations', 'part_{}_{}.txt'.format(net_size, mode)), 'w')
+f1 = open(os.path.join('annotations', 'pos_12_{}.txt'.format(mode)), 'a')
+f2 = open(os.path.join('annotations', 'neg_12_{}.txt'.format(mode)), 'a')
+f3 = open(os.path.join('annotations', 'part_12_{}.txt'.format(mode)), 'a')
 
 # anno_file: store labels of the wider face training data
 with open(anno_file, 'r') as f:
@@ -43,13 +42,15 @@ d_idx = 0 # dont care
 idx = 0
 for annotation in annotations:
     annotation = annotation.strip().split(' ')
-    im_path = os.path.join(prefix, annotation[0])
+    im_path = os.path.join(im_dir, annotation[0])
     print(im_path)
     bbox = list(map(float, annotation[1:]))
     boxes = np.array(bbox, dtype=np.int32).reshape(-1, 4)
+    
+    # user annotation  is x1, y1, x2, y2
     # anno form is x1, y1, w, h, convert to x1, y1, x2, y2
-    boxes[:,2] += boxes[:,0] - 1
-    boxes[:,3] += boxes[:,1] - 1
+    # boxes[:,2] += boxes[:,0] - 1
+    # boxes[:,3] += boxes[:,1] - 1
 
     img = cv2.imread(im_path)
     idx += 1
@@ -70,7 +71,7 @@ for annotation in annotations:
 
         if np.max(Iou) < 0.3:
             # Iou with all gts must below 0.3
-            save_file = os.path.join(neg_save_dir, "%s.jpg" % n_idx)
+            save_file = os.path.join(neg_save_dir, "user_%s.jpg" % n_idx)
             f2.write(save_file + ' 0\n')
             cv2.imwrite(save_file, resized_im)
             n_idx += 1
@@ -103,11 +104,11 @@ for annotation in annotations:
             Iou = IoU(crop_box, boxes)
 
             cropped_im = img[ny1: ny1 + size, nx1: nx1 + size, :]
-            resized_im = cv2.resize(cropped_im, (net_size, net_size), interpolation=cv2.INTER_LINEAR)
+            resized_im = cv2.resize(cropped_im, (12, 12), interpolation=cv2.INTER_LINEAR)
 
             if np.max(Iou) < 0.3:
                 # Iou with all gts must below 0.3
-                save_file = os.path.join(neg_save_dir, "%s.jpg" % n_idx)
+                save_file = os.path.join(neg_save_dir, "user_%s.jpg" % n_idx)
                 f2.write(save_file + ' 0\n')
                 cv2.imwrite(save_file, resized_im)
                 n_idx += 1
@@ -135,16 +136,16 @@ for annotation in annotations:
             offset_y2 = (y2 - ny2) / float(size)
 
             cropped_im = img[int(ny1): int(ny2), int(nx1): int(nx2), :]
-            resized_im = cv2.resize(cropped_im, (net_size, net_size), interpolation=cv2.INTER_LINEAR)
+            resized_im = cv2.resize(cropped_im, (12, 12), interpolation=cv2.INTER_LINEAR)
 
             box_ = box.reshape(1, -1)
             if IoU(crop_box, box_) >= 0.65:
-                save_file = os.path.join(pos_save_dir, "%s.jpg" % p_idx)
+                save_file = os.path.join(pos_save_dir, "user_%s.jpg" % p_idx)
                 f1.write(save_file + ' 1 %.2f %.2f %.2f %.2f\n' % (offset_x1, offset_y1, offset_x2, offset_y2))
                 cv2.imwrite(save_file, resized_im)
                 p_idx += 1
             elif IoU(crop_box, box_) >= 0.4 and d_idx < 1.2*p_idx + 1:
-                save_file = os.path.join(part_save_dir, "%s.jpg" % d_idx)
+                save_file = os.path.join(part_save_dir, "user_%s.jpg" % d_idx)
                 f3.write(save_file + ' -1 %.2f %.2f %.2f %.2f\n' % (offset_x1, offset_y1, offset_x2, offset_y2))
                 cv2.imwrite(save_file, resized_im)
                 d_idx += 1

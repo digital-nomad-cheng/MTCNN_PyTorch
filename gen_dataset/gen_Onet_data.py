@@ -40,8 +40,8 @@ print("%d pics in total" % num)
 image_size = 48
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
-mtcnn_detector = MTCNNDetector(p_model_path='./pretrained_weights/best_pnet.pth',
-                            r_model_path='./pretrained_weights/best_rnet.pth')
+mtcnn_detector = MTCNNDetector(p_model_path='./pretrained_weights/mtcnn/best_pnet.pth',
+                            r_model_path='./pretrained_weights/mtcnn/best_rnet.pth')
 p_idx = 0 # positive
 n_idx = 0 # negative
 d_idx = 0 # dont care
@@ -88,7 +88,7 @@ for annotation in annotations:
                                 interpolation=cv2.INTER_LINEAR)
 
         # save negative images and write label
-        if np.max(Iou) < 0.3 and n_idx < 3.2*p_idx+1:
+        if np.max(Iou) < 0.2 and n_idx < 1.0*p_idx+1:
             # Iou with all gts must below 0.3
             save_file = os.path.join(neg_save_dir, "%s.jpg" % n_idx)
             f2.write(save_file + ' 0\n')
@@ -114,7 +114,7 @@ for annotation in annotations:
                 cv2.imwrite(save_file, resized_im)
                 p_idx += 1
 
-            elif np.max(Iou) >= 0.4 and d_idx < 1.2*p_idx + 1:
+            elif np.max(Iou) >= 0.4 and d_idx < 1.0*p_idx + 1:
                 save_file = os.path.join(part_save_dir, "%s.jpg" % d_idx)
                 f3.write(save_file + ' -1 %.2f %.2f %.2f %.2f\n' % (
                     offset_x1, offset_y1, offset_x2, offset_y2))

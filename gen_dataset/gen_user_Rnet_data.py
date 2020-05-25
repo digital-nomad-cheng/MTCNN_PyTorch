@@ -12,8 +12,8 @@ from MTCNN import MTCNNDetector
 
 mode = 'train'
 prefix = ''
-anno_file = "./annotations/wider_anno_{}.txt".format(mode)
-im_dir = "/home/idealabs/data/opensource_dataset/WIDER/WIDER_{}/images".format(mode)
+anno_file = "./annotations/user_anno_{}.txt".format(mode)
+im_dir = "./data/user/images"
 pos_save_dir = "./data/{}/24/positive".format(mode)
 part_save_dir = "./data/{}/24/part".format(mode)
 neg_save_dir = "./data/{}/24/negative".format(mode)
@@ -26,9 +26,9 @@ if not os.path.exists(neg_save_dir):
     os.makedirs(neg_save_dir)
 
 # store labels of positive, negative, part images
-f1 = open(os.path.join('annotations', 'pos_24_{}.txt'.format(mode)), 'w')
-f2 = open(os.path.join('annotations', 'neg_24_{}.txt'.format(mode)), 'w')
-f3 = open(os.path.join('annotations', 'part_24_{}.txt'.format(mode)), 'w')
+f1 = open(os.path.join('annotations', 'pos_24_{}.txt'.format(mode)), 'a')
+f2 = open(os.path.join('annotations', 'neg_24_{}.txt'.format(mode)), 'a')
+f3 = open(os.path.join('annotations', 'part_24_{}.txt'.format(mode)), 'a')
 
 # anno_file: store labels of the wider face training data
 with open(anno_file, 'r') as f:
@@ -37,7 +37,7 @@ num = len(annotations)
 print("%d pics in total" % num)
 
 image_size = 24
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 p_idx = 0 # positive
 n_idx = 0 # negative
@@ -49,18 +49,18 @@ mtcnn_detector = MTCNNDetector(p_model_path='./pretrained_weights/mtcnn/best_pne
 
 for annotation in annotations:
     annotation = annotation.strip().split(' ')
-    im_path = os.path.join(prefix, annotation[0])
+    im_path = os.path.join(im_dir, annotation[0])
     print(im_path)
     bbox = list(map(float, annotation[1:]))
     boxes = np.array(bbox, dtype=np.int32).reshape(-1, 4)
+    
     # anno form is x1, y1, w, h, convert to x1, y1, x2, y2
-    boxes[:,2] += boxes[:,0] - 1
-    boxes[:,3] += boxes[:,1] - 1
+    # boxes[:,2] += boxes[:,0] - 1
+    # boxes[:,3] += boxes[:,1] - 1
 
     image = cv2.imread(im_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     bboxes = mtcnn_detector.detect_face(image)
-    
     # bboxes, landmarks = create_mtcnn_net(image, 12, device, p_model_path='../train/pnet_Weights')
     if bboxes.shape[0] == 0:
         continue
@@ -89,9 +89,9 @@ for annotation in annotations:
                                 interpolation=cv2.INTER_LINEAR)
 
         # save negative images and write label
-        if np.max(Iou) < 0.2 and n_idx < 3.0*p_idx+1:
+        if np.max(Iou) < 0.2 and n_idx < 3.2*p_idx+1:
             # Iou with all gts must below 0.3
-            save_file = os.path.join(neg_save_dir, "%s.jpg" % n_idx)
+            save_file = os.path.join(neg_save_dir, "user_%s.jpg" % n_idx)
             f2.write(save_file + ' 0\n')
             cv2.imwrite(save_file, resized_im)
             n_idx += 1
@@ -109,14 +109,14 @@ for annotation in annotations:
 
             # save positive and part-face images and write labels
             if np.max(Iou) >= 0.65:
-                save_file = os.path.join(pos_save_dir, "%s.jpg" % p_idx)
+                save_file = os.path.join(pos_save_dir, "user_%s.jpg" % p_idx)
                 f1.write(save_file + ' 1 %.2f %.2f %.2f %.2f\n' % (
                     offset_x1, offset_y1, offset_x2, offset_y2))
                 cv2.imwrite(save_file, resized_im)
                 p_idx += 1
 
-            elif np.max(Iou) >= 0.4 and d_idx < 1.0*p_idx + 1:
-                save_file = os.path.join(part_save_dir, "%s.jpg" % d_idx)
+            elif np.max(Iou) >= 0.4 and d_idx < 1.2*p_idx + 1:
+                save_file = os.path.join(part_save_dir, "user_%s.jpg" % d_idx)
                 f3.write(save_file + ' -1 %.2f %.2f %.2f %.2f\n' % (
                     offset_x1, offset_y1, offset_x2, offset_y2))
                 cv2.imwrite(save_file, resized_im)

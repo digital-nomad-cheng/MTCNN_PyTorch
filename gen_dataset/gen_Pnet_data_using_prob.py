@@ -7,17 +7,17 @@ import cv2
 import os
 import numpy as np
 from tools.utils import*
-import config
 
-mode = 'val'
-net_size = config.PNET_SIZE
+mode = 'train'
+
 prefix = ''
 anno_file = "./annotations/wider_anno_{}.txt".format(mode)
+prob_file = "./annotations/wider_anno_train_prob.txt"
 im_dir = "./data/WIDER_train/images"
 
-pos_save_dir = "./data/{}/{}/positive".format(mode, net_size)
-part_save_dir = "./data/{}/{}/part".format(mode, net_size)
-neg_save_dir = "./data/{}/{}/negative".format(mode, net_size)
+pos_save_dir = "./data/{}/12/positive".format(mode)
+part_save_dir = "./data/{}/12/part".format(mode)
+neg_save_dir = "./data/{}/12/negative".format(mode)
 
 if not os.path.exists(pos_save_dir):
     os.makedirs(pos_save_dir)
@@ -27,13 +27,17 @@ if not os.path.exists(neg_save_dir):
     os.makedirs(neg_save_dir)
 
 # store labels of positive, negative, part images
-f1 = open(os.path.join('annotations', 'pos_{}_{}.txt'.format(net_size, mode)), 'w')
-f2 = open(os.path.join('annotations', 'neg_{}_{}.txt'.format(net_size, mode)), 'w')
-f3 = open(os.path.join('annotations', 'part_{}_{}.txt'.format(net_size, mode)), 'w')
+f1 = open(os.path.join('annotations', 'pos_12_{}.txt'.format(mode)), 'w')
+f2 = open(os.path.join('annotations', 'neg_12_{}.txt'.format(mode)), 'w')
+f3 = open(os.path.join('annotations', 'part_12_{}.txt'.format(mode)), 'w')
 
 # anno_file: store labels of the wider face training data
 with open(anno_file, 'r') as f:
     annotations = f.readlines()
+if mode == 'train':
+    with open(prob_file, 'r') as f:
+        line_probs = f.readlines()
+        
 num = len(annotations)
 print("%d pics in total" % num)
 
@@ -41,9 +45,15 @@ p_idx = 0 # positive
 n_idx = 0 # negative
 d_idx = 0 # dont care
 idx = 0
-for annotation in annotations:
+for line, annotation in enumerate(annotations):
     annotation = annotation.strip().split(' ')
     im_path = os.path.join(prefix, annotation[0])
+    
+    if mode == 'train':
+        probs = line_probs[line]
+        probs = probs.strip().split(' ')
+        probs = list(map(float, probs[1:]))
+        probs = np.array(probs, dtype=np.float32).reshape(-1, 1)
     print(im_path)
     bbox = list(map(float, annotation[1:]))
     boxes = np.array(bbox, dtype=np.int32).reshape(-1, 4)
@@ -76,17 +86,21 @@ for annotation in annotations:
             n_idx += 1
             neg_num += 1
 
-    for box in boxes:
+    for face_index, box in enumerate(boxes):
         # box (x_left, y_top, w, h)
         x1, y1, x2, y2 = box
         w = x2 - x1 + 1
         h = y2 - y1 + 1
-
+        
+        prob = probs[face_index]
         # ignore small faces
         # in case the ground truth boxes of small faces are not accurate
-        if max(w, h) < 40 or x1 < 0 or y1 < 0 or w < 0 or h < 0:
-            continue
-
+        if mode == 'train':
+            if max(w, h) < 40 or x1 < 0 or y1 < 0 or min(w, h) < 10 or prob < 0.5:
+                continue
+        else:
+            if max(w, h) < 40 or x1 < 0 or y1 < 0 or min(w, h) < 10 or prob:
+                continue    
         # generate negative examples that have overlap with gt
         for i in range(5):
             size = np.random.randint(12, min(width, height) / 2)
@@ -103,7 +117,7 @@ for annotation in annotations:
             Iou = IoU(crop_box, boxes)
 
             cropped_im = img[ny1: ny1 + size, nx1: nx1 + size, :]
-            resized_im = cv2.resize(cropped_im, (net_size, net_size), interpolation=cv2.INTER_LINEAR)
+            resized_im = cv2.resize(cropped_im, (12, 12), interpolation=cv2.INTER_LINEAR)
 
             if np.max(Iou) < 0.3:
                 # Iou with all gts must below 0.3
@@ -135,7 +149,7 @@ for annotation in annotations:
             offset_y2 = (y2 - ny2) / float(size)
 
             cropped_im = img[int(ny1): int(ny2), int(nx1): int(nx2), :]
-            resized_im = cv2.resize(cropped_im, (net_size, net_size), interpolation=cv2.INTER_LINEAR)
+            resized_im = cv2.resize(cropped_im, (12, 12), interpolation=cv2.INTER_LINEAR)
 
             box_ = box.reshape(1, -1)
             if IoU(crop_box, box_) >= 0.65:

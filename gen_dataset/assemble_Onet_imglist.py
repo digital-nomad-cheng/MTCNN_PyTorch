@@ -3,7 +3,7 @@ import sys
 sys.path.append(os.getcwd())
 import assemble
 
-mode = 'val'
+mode = 'train'
 onet_postive_file = 'annotations/pos_48_{}.txt'.format(mode)
 onet_part_file = 'annotations/part_48_{}.txt'.format(mode)
 onet_neg_file = 'annotations/neg_48_{}.txt'.format(mode)

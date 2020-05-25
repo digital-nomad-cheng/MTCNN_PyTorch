@@ -2,14 +2,16 @@ import os
 import sys
 sys.path.append(os.getcwd())
 import assemble
+import config
 
-mode = 'train'
+mode = 'val'
+net_size = config.PNET_SIZE
 
-pnet_postive_file = 'annotations/pos_12_{}.txt'.format(mode)
-pnet_part_file = 'annotations/part_12_{}.txt'.format(mode)
-pnet_neg_file = 'annotations/neg_12_{}.txt'.format(mode)
+pnet_postive_file = 'annotations/pos_{}_{}.txt'.format(net_size, mode)
+pnet_part_file = 'annotations/part_{}_{}.txt'.format(net_size, mode)
+pnet_neg_file = 'annotations/neg_{}_{}.txt'.format(net_size, mode)
 # pnet_landmark_file = './anno_store/landmark_12.txt'
-imglist_filename = 'annotations/imglist_anno_12_{}.txt'.format(mode)
+imglist_filename = 'annotations/imglist_anno_{}_{}.txt'.format(net_size, mode)
 
 if __name__ == '__main__':
 
