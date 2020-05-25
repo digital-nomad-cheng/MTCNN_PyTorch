@@ -14,7 +14,6 @@ import config
 
 class MTCNNDetector(object):
     ''' P, R, O net for face detection and alignment'''
-
     def __init__(self,
                  p_model_path=None,
                  r_model_path=None,
@@ -70,8 +69,8 @@ class MTCNNDetector(object):
         
         Parameters:
         -----------
-            cls_map: numpy array , n x m x 2, detect score for each position
-            bbox_map: numpy array , n x m x 4, detect bbox regression value for each position
+            cls_map: numpy array , 1 x n x m x 2, detect score for each position
+            bbox_map: numpy array , 1 x n x m x 4, detect bbox regression value for each position
             scale: float number, scale of this detection
             threshold: float number, detect threshold
         Returns:
@@ -83,7 +82,7 @@ class MTCNNDetector(object):
         # softmax layer 1 for face, return a tuple with an array of row idxs and
         # an array of col idxs
         # locate face above threshold from cls_map
-        t_index = np.where(cls_map[:, :, 1] > threshold)
+        t_index = np.where(cls_map[0, :, :, 1] > threshold)
         
         # find nothing
         if t_index[0].size == 0:
@@ -93,7 +92,7 @@ class MTCNNDetector(object):
                               for i in range(4)]
         bbox_map = np.array([dx1, dy1, dx2, dy2])
 
-        score = cls_map[t_index[0], t_index[1], 1]
+        score = cls_map[0, t_index[0], t_index[1], 1]
         boundingbox = np.vstack([np.round((stride * t_index[1]) / scale),
                                  np.round((stride * t_index[0]) / scale),
                                  np.round(
@@ -125,75 +124,27 @@ class MTCNNDetector(object):
             img, new_size, interpolation=cv2.INTER_LINEAR)  # resized image
         return img_resized
 
-    def pad(self, bboxes, w, h):
-        """
-            pad the the bboxes
-        Parameters:
-        ----------
-            bboxes: numpy array, n x 5, input bboxes
-            w: float number, width of the input image
-            h: float number, height of the input image
-        Returns :
-        ------
-            dy, dx : numpy array, n x 1, start point of the bbox in target image
-            edy, edx : numpy array, n x 1, end point of the bbox in target image
-            y, x : numpy array, n x 1, start point of the bbox in original image
-            ey, ex : numpy array, n x 1, end point of the bbox in original image
-            tmph, tmpw: numpy array, n x 1, height and width of the bbox
-        """
-
-        tmpw = (bboxes[:, 2] - bboxes[:, 0]).astype(np.int32)
-        tmph = (bboxes[:, 3] - bboxes[:, 1]).astype(np.int32)
-        numbox = bboxes.shape[0]
-
-        dx = np.zeros((numbox,))
-        dy = np.zeros((numbox,))
-        edx, edy = tmpw.copy(), tmph.copy()
-
-        x, y, ex, ey = bboxes[:, 0], bboxes[:, 1], bboxes[:, 2], bboxes[:, 3]
-
-        tmp_index = np.where(ex > w)
-        edx[tmp_index] = tmpw[tmp_index] + w - ex[tmp_index]
-        ex[tmp_index] = w
-
-        tmp_index = np.where(ey > h)
-        edy[tmp_index] = tmph[tmp_index] + h - ey[tmp_index]
-        ey[tmp_index] = h
-
-        tmp_index = np.where(x < 0)
-        dx[tmp_index] = 0 - x[tmp_index]
-        x[tmp_index] = 0
-
-        tmp_index = np.where(y < 0)
-        dy[tmp_index] = 0 - y[tmp_index]
-        y[tmp_index] = 0
-
-        return_list = [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph]
-        return_list = [item.astype(np.int32) for item in return_list]
-
-        return return_list
-
     def detect_pnet(self, im):
         """Get face candidates through pnet
 
         Parameters:
-        ----------
+        -----------
         im: numpy array, input image array
 
         Returns:
-        -------
+        --------
         bboxes_align: numpy array
             bboxes after calibration
         """
         h, w, c = im.shape
         net_size = config.PNET_SIZE
-        current_scale = float(net_size) / \
-                        self.min_face_size  # find initial scale
+        current_scale = float(net_size) / self.min_face_size  # find initial scale
         im_resized = self.resize_image(im, current_scale)
         current_height, current_width, _ = im_resized.shape
 
-        # fcn for pnet
+        # bounding boxes for all the pyramid scales
         all_bboxes = list()
+        # generating bounding boxes for each scale
         while min(current_height, current_width) > net_size:
             image_tensor = utils.convert_image_to_tensor(im_resized)
             feed_imgs = image_tensor.unsqueeze(0)
@@ -202,9 +153,8 @@ class MTCNNDetector(object):
             cls_map, reg_map = self.pnet_detector(feed_imgs)
             cls_map_np = utils.convert_chwTensor_to_hwcNumpy(cls_map.cpu())
             reg_map_np = utils.convert_chwTensor_to_hwcNumpy(reg_map.cpu())
-
             bboxes = self.generate_bounding_box(
-                cls_map_np[0, :, :], reg_map_np, current_scale, self.thresh[0])
+                cls_map_np, reg_map_np, current_scale, self.thresh[0])
 
             current_scale *= self.scale_factor
             im_resized = self.resize_image(im, current_scale)
@@ -212,36 +162,36 @@ class MTCNNDetector(object):
 
             if bboxes.size == 0:
                 continue
+
             keep = utils.nms(bboxes[:, :5], 0.5, 'Union')
             bboxes = bboxes[keep]
             all_bboxes.append(bboxes)
 
+        
         if len(all_bboxes) == 0:
             return None
 
         all_bboxes = np.vstack(all_bboxes)
 
-        # merge the detection from first stage
+        # apply nms to the detections from all the scales 
         keep = utils.nms(all_bboxes[:, 0:5], 0.7, 'Union')
         all_bboxes = all_bboxes[keep]
         
         # 0-4: original bboxes, 5: score, 5: offsets
         bboxes_align = utils.calibrate_box(all_bboxes[:, 0:5], all_bboxes[:, 5:])
-        
         bboxes_align = utils.convert_to_square(bboxes_align)  
-        
         bboxes_align[:, 0:4] = np.round(bboxes_align[:, 0:4])
         
         return bboxes_align
 
-    def detect_rnet(self, im, dets):
+    def detect_rnet(self, im, bboxes):
         """Get face candidates using rnet
 
         Parameters:
         ----------
         im: numpy array
             input image array
-        dets: numpy array
+        bboxes: numpy array
             detection results of pnet
 
         Returns:
@@ -251,11 +201,13 @@ class MTCNNDetector(object):
         """
         net_size = config.RNET_SIZE
         h, w, c = im.shape
-        if dets is None:
+        if bboxes is None:
             return None
 
-        [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = self.pad(dets, w, h)
-        num_bboxes = dets.shape[0]
+        num_bboxes = bboxes.shape[0]
+        
+        [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = utils.correct_bboxes(bboxes, w, h)
+
         
         # crop face using pnet proposals
         cropped_ims_tensors = []
@@ -282,9 +234,8 @@ class MTCNNDetector(object):
         reg = reg.cpu().data.numpy()
 
         keep_inds = np.where(cls[:, 1] > self.thresh[1])[0]
-
         if len(keep_inds) > 0:
-            keep_bboxes = dets[keep_inds]
+            keep_bboxes = bboxes[keep_inds]
             keep_cls = cls[keep_inds, :]
             keep_reg = reg[keep_inds]
             # using softmax 1 as cls score
@@ -306,14 +257,14 @@ class MTCNNDetector(object):
 
         return bboxes_align
 
-    def detect_onet(self, im, dets):
+    def detect_onet(self, im, bboxes):
         """Get face candidates using onet
 
         Parameters:
         ----------
         im: numpy array
             input image array
-        dets: numpy array
+        bboxes: numpy array
             detection results of rnet
 
         Returns:
@@ -323,11 +274,11 @@ class MTCNNDetector(object):
         """
         net_size = config.ONET_SIZE
         h, w, c = im.shape
-        if dets is None:
+        if bboxes is None:
             return None
 
-        [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = self.pad(dets, w, h)
-        num_bboxes = dets.shape[0]
+        [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = utils.correct_bboxes(bboxes, w, h)
+        num_bboxes = bboxes.shape[0]
         
         # crop face using rnet proposal
         cropped_ims_tensors = []
@@ -336,47 +287,36 @@ class MTCNNDetector(object):
                 if tmph[i] > 0 and tmpw[i] > 0:
                     tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
                     tmp[dy[i]:edy[i], dx[i]:edx[i], :] = im[y[i]:ey[i], x[i]:ex[i], :]
-                    crop_im = cv2.resize(tmp, (48, 48))
-                    crop_im_tensor = convert_image_to_tensor(crop_im)
+                    crop_im = cv2.resize(tmp, (net_size, net_size))
+                    crop_im_tensor = utils.convert_image_to_tensor(crop_im)
                     cropped_ims_tensors.append(crop_im_tensor)
             except ValueError as e:
                 print(e)
 
         feed_imgs = torch.stack(cropped_ims_tensors)
-
         feed_imgs = feed_imgs.to(self.device)
 
-        cls_map, reg = self.onet_detector(feed_imgs)
-
-        cls_map = cls_map.cpu().data.numpy()
+        cls, reg = self.onet_detector(feed_imgs)
+        cls = cls.cpu().data.numpy()
         reg = reg.cpu().data.numpy()
 
-        keep_inds = np.where(cls_map[:, 1] > self.thresh[2])[0]
-
+        keep_inds = np.where(cls[:, 1] > self.thresh[2])[0]
         if len(keep_inds) > 0:
-            bboxes = dets[keep_inds]
-            cls = cls_map[keep_inds, 1]
-            bboxes[:, 4] = cls.reshape((-1,))
-            reg = reg[keep_inds]
+            keep_bboxes = bboxes[keep_inds]
+            keep_cls = cls[keep_inds, :]
+            keep_reg = reg[keep_inds]
+            keep_bboxes[:, 4] = keep_cls[:, 1].reshape((-1,))
         else:
             return None
-
-        # keep = utils.nms(bboxes, 0.7, mode="Minimum")
-        # if len(keep) == 0:
-        #    return None
-
-        # keep_cls = cls[keep]
-        # keep_bboxes = boxes[keep]
-        # keep_reg = reg[keep]
         
-        bboxes_align = utils.calibrate_box(boxes, reg)
-
+        bboxes_align = utils.calibrate_box(keep_bboxes, keep_reg)
         keep = utils.nms(bboxes_align, 0.7, mode='Minimum')
+        
         if len(keep) == 0:
             return None
 
-        bboxes_align = boxes_align[keep]
-
+        bboxes_align = bboxes_align[keep]
+        bboxes_align = utils.convert_to_square(bboxes_align)
         return bboxes_align
 
     def detect_face(self, img):
@@ -412,7 +352,7 @@ class MTCNNDetector(object):
             t3 = time.time() - t
             t = time.time()
             print(
-                "time cost " + '{:.3f}'.format(t1 + t2 + t3) + '  pnet {:.3f}  rnet {:.3f}  onet {:.3f}'.format(t1, t2,
-                                                                                                                t3))
+                "time cost " + '{:.3f}'.format(t1 + t2 + t3) + \
+                        '  pnet {:.3f}  rnet {:.3f}  onet {:.3f}'.format(t1, t2, t3))
 
         return bboxes_align
