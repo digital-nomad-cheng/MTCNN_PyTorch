@@ -59,6 +59,8 @@ According to my observation, small pnet brings many false positives which become
 
 ### Prune MTCNN
 
+Model Prunning is a better strategy than design mobile cnn for such small networks as Pnet, Rnet, and Onet. By iteratively pruning MTCNN models, we can decrease and model size and improve inference speed at the same time.
+
 ### Knowledge Distillation
 
 ## Deploy MTCNN
