@@ -66,7 +66,7 @@ for annotation in annotations:
         Iou = IoU(crop_box, boxes)
 
         cropped_im = img[ny: ny + size, nx: nx + size, :]
-        resized_im = cv2.resize(cropped_im, (12, 12), interpolation=cv2.INTER_LINEAR)
+        resized_im = cv2.resize(cropped_im, (net_size, net_size), interpolation=cv2.INTER_LINEAR)
 
         if np.max(Iou) < 0.3:
             # Iou with all gts must below 0.3
