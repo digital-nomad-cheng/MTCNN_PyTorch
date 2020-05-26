@@ -63,11 +63,15 @@ Model Prunning is a better strategy than design mobile cnn for such small networ
 
 ### Quantization Aware Training
 
+By using quantization aware training library [brevitas](https://github.com/Xilinx/brevitas), I managed to achieve 96.2% accuracy on Pnet which is 2% lower than the original version, but the model size if 4x smaller and the inference speed is to be estimated.
+
+However, when training Rnet and Onet, OOM errors occured. I will figure out why in the future.
+
 | PRIVATE DATA|  Pnet  |  Rnet |  Onet |
 | :---------: |:------:|:-----:|:-----:|
-|   cls loss  |  0.107  | 0.09 | 0.104 |
-| offset loss | 0.0080 | 0.011 | 0.0057|
-|   cls acc   |  0.962 | 0.971 | 0.970 |
+|   cls loss  |  0.107  | - | - |
+| offset loss | 0.0080 | - | - |
+|   cls acc   |  0.962 | - | - |
 
 
 ### Knowledge Distillation
