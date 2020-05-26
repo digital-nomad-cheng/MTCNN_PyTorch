@@ -6,7 +6,7 @@
    RUN `pyhon gen_dataset/transform_mat2txt.py`
    Change the mode variable in `transform_mat2txt.py` to `val` to generate val data label.
    
-## Train MTNN
+## Train MTCNN
 ### Train Pnet
 1. generate pnet training data:
     RUN `python gen_dataset/gen_Pnet_data.py`
@@ -58,6 +58,17 @@ By combine shufflenet structure and mobilenet structure we can design light weig
 According to my observation, small pnet brings many false positives which becomes a burden or rnet and onet. By increase the Pnet size, there will be less false positives and improve the overall efficiency.
 
 ### Prune MTCNN
+
+Model Prunning is a better strategy than design mobile cnn for such small networks as Pnet, Rnet, and Onet. By iteratively pruning MTCNN models, we can decrease and model size and improve inference speed at the same time.
+
+### Quantization Aware Training
+
+| PRIVATE DATA|  Pnet  |  Rnet |  Onet |
+| :---------: |:------:|:-----:|:-----:|
+|   cls loss  |  0.107  | 0.09 | 0.104 |
+| offset loss | 0.0080 | 0.011 | 0.0057|
+|   cls acc   |  0.962 | 0.971 | 0.970 |
+
 
 ### Knowledge Distillation
 
