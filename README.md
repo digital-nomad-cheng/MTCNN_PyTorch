@@ -59,7 +59,13 @@ According to my observation, small pnet brings many false positives which become
 
 ### Prune MTCNN
 
-Model Prunning is a better strategy than design mobile cnn for such small networks as Pnet, Rnet, and Onet. By iteratively pruning MTCNN models, we can decrease and model size and improve inference speed at the same time.
+Model Prunning is a better strategy than design mobile cnn for such small networks as Pnet, Rnet, and Onet. By iteratively pruning MTCNN models, we can decrease and model size and improve inference speed at the same time. 
+
+| PRIVATE DATA|  Pnet  |  Rnet |  Onet |
+| :---------: |:------:|:-----:|:-----:|
+|   cls loss  |  0.099  | - | - |
+| offset loss | 0.0063 | - | - |
+|   cls acc   |  0.966 | - | - |
 
 ### Quantization Aware Training
 
