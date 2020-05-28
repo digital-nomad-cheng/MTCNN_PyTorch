@@ -63,9 +63,9 @@ Model Prunning is a better strategy than design mobile cnn for such small networ
 
 | PRIVATE DATA|  Pnet  |  Rnet |  Onet |
 | :---------: |:------:|:-----:|:-----:|
-|   cls loss  |  0.099  | - | - |
-| offset loss | 0.0063 | - | - |
-|   cls acc   |  0.966 | - | - |
+|   cls loss  |  0.091  | - | - |
+| offset loss | 0.0055 | - | - |
+|   cls acc   |  0.70 | - | - |
 
 ### Quantization Aware Training
 
