@@ -1,29 +1,32 @@
-# coding: utf-8
-import os
-import cv2
-import random
-import sys
-sys.path.append("..")
-import numpy as np
+import os, sys
+sys.path.append('.')
 import time
-from utils.util import*
+import random
 
+import cv2
+import numpy as np
+
+from tools.utils import *
+
+'''bbox annotations in FacePoint dataset is x0, x1, y0, y1'''
+
+mode = 'train'
 prefix = ''
-data_dir = '../data_set/train'
-anno_file = '../data_set/landmark/trainImageList.txt'
-
+data_dir = './data/FacePoint'
+anno_file = './data/FacePoint/{}ImageList.txt'.format(mode)
+save_dir = './data/{}/'.format(mode)
 size = 48
 image_id = 0
 
-landmark_imgs_save_dir = os.path.join(data_dir,"48/landmark")
+landmark_imgs_save_dir = os.path.join(save_dir,"48/landmark")
 if not os.path.exists(landmark_imgs_save_dir):
     os.makedirs(landmark_imgs_save_dir)
 
-anno_dir = './anno_store'
+anno_dir = './annotations'
 if not os.path.exists(anno_dir):
     os.makedirs(anno_dir)
 
-landmark_anno_filename = "landmark_48.txt"
+landmark_anno_filename = "landmark_48_{}.txt".format(mode)
 save_landmark_anno = os.path.join(anno_dir,landmark_anno_filename)
 
 f = open(save_landmark_anno, 'w')
@@ -44,7 +47,7 @@ for annotation in annotations:
 
     assert len(annotation)==15,"each line should have 15 element"
 
-    im_path = os.path.join('../data_set/landmark/',annotation[0].replace("\\", "/"))
+    im_path = os.path.join(data_dir, annotation[0])
 
     img = cv2.imread(im_path)
 
