@@ -69,9 +69,9 @@ Model Prunning is a better strategy than design mobile cnn for such small networ
 
 Inference speed benchmark using ncnn inference framework:
 ```
-       det1  min =   27.31  max =   28.31  avg =   27.62
-       det2  min =    0.50  max =    0.62  avg =    0.58
-       det3  min =    3.14  max =    3.82  avg =    3.25
+       pnet  min =   27.31  max =   28.31  avg =   27.62
+       rnet  min =    0.50  max =    0.62  avg =    0.58
+       onet  min =    3.14  max =    3.82  avg =    3.25
 pruned_pnet  min =    6.76  max =    7.13  avg =    6.89
 pruned_rnet  min =    0.21  max =    0.22  avg =    0.21
 pruned_onet  min =    1.16  max =    1.52  avg =    1.27
