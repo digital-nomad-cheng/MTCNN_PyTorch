@@ -67,7 +67,8 @@ Model Prunning is a better strategy than design mobile cnn for such small networ
 | offset loss | 0.0055 | 0.0116 | 0.0062 |
 |   cls acc   |  0.970 | 0.958 | 0.959 |
 
-Inference speed benchmark using ncnn inference framework:
+Inference speed benchmark using ncnn inference framework, we can seen from the chart below that the inference speed has been increased to 2-3 times.
+
 ```
        pnet  min =   27.31  max =   28.31  avg =   27.62
        rnet  min =    0.50  max =    0.62  avg =    0.58
