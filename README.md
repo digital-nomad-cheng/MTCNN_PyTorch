@@ -67,6 +67,16 @@ Model Prunning is a better strategy than design mobile cnn for such small networ
 | offset loss | 0.0055 | 0.0116 | 0.0062 |
 |   cls acc   |  0.970 | 0.958 | 0.959 |
 
+Inference speed benchmark using ncnn inference framework:
+```
+       det1  min =   27.31  max =   28.31  avg =   27.62
+       det2  min =    0.50  max =    0.62  avg =    0.58
+       det3  min =    3.14  max =    3.82  avg =    3.25
+pruned_pnet  min =    6.76  max =    7.13  avg =    6.89
+pruned_rnet  min =    0.21  max =    0.22  avg =    0.21
+pruned_onet  min =    1.16  max =    1.52  avg =    1.27
+```
+				  
 ### Quantization Aware Training
 
 By using quantization aware training library [brevitas](https://github.com/Xilinx/brevitas), I managed to achieve 96.2% accuracy on Pnet which is 2% lower than the original version, but the model size if 4x smaller and the inference speed is to be estimated.
