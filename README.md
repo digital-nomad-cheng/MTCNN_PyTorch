@@ -78,6 +78,14 @@ pruned_rnet  min =    0.21  max =    0.22  avg =    0.21
 pruned_onet  min =    1.16  max =    1.52  avg =    1.27
 ```
 				  
+We could also treat prunning process as a *NAS(network architecture search)* procesure. After we obtained the model, we could train it from zero. And I achieved better accuracy using this method on pruned model above.
+
+| PRIVATE DATA|  Pnet  |  Rnet |  Onet |
+| :---------: |:------:|:-----:|:-----:|
+|   cls loss  |  0.091  | 0.1223 | 0.1055 |
+| offset loss | 0.0055 | 0.0116 | 0.0062 |
+|   cls acc   |  0.970 | 0.958 | 0.959 |
+
 ### Quantization Aware Training
 
 By using quantization aware training library [brevitas](https://github.com/Xilinx/brevitas), I managed to achieve 96.2% accuracy on Pnet which is 2% lower than the original version, but the model size if 4x smaller and the inference speed is to be estimated.
