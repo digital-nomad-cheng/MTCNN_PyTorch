@@ -82,9 +82,9 @@ We could also treat prunning process as a *NAS(network architecture search)* pro
 
 | PRIVATE DATA|  Pnet  |  Rnet |  Onet |
 | :---------: |:------:|:-----:|:-----:|
-|   cls loss  |  0.091  | 0.1223 | 0.1055 |
-| offset loss | 0.0055 | 0.0116 | 0.0062 |
-|   cls acc   |  0.970 | 0.958 | 0.959 |
+|   cls loss  | 0.0083  | 0.1038 | 0.0923 |
+| offset loss | 0.00588 | 0.012 | 0.00588 |
+|   cls acc   | 0.9718 | 0.965 | 0.970 |
 
 ### Quantization Aware Training
 
