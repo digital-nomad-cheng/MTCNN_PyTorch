@@ -84,7 +84,7 @@ We could also treat prunning process as a *NAS(network architecture search)* pro
 | :---------: |:------:|:-----:|:-----:|
 |   cls loss  | 0.0083  | 0.1038 | 0.0923 |
 | offset loss | 0.00588 | 0.012 | 0.00588 |
-|   cls acc   | 0.9718 | 0.965 | 0.970 |
+|   cls acc   | 0.9718 | 0.965 | 0.9706 |
 
 ### Quantization Aware Training
 
