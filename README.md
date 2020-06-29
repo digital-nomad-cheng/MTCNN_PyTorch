@@ -106,6 +106,8 @@ However, when training Rnet and Onet, OOM errors occured. I will figure out why 
 
 ## Todo
 - [ ] Data Augmentation to avoid overfitting
+- [ ] Use L1 Smooth loss or WingLoss for bbox and landmarks localization
+
 
 ## References
 1. https://github.com/xuexingyu24/MTCNN_Tutorial
