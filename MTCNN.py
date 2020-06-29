@@ -53,7 +53,7 @@ class MTCNNDetector(object):
             rnet.eval()
 
         if o_model_path is not None:
-            onet = ONet()
+            onet = ONet(train_landmarks=True)
             onet.load_state_dict(torch.load(o_model_path))
             if (use_cuda):
                 onet.to(self.device)
@@ -296,19 +296,28 @@ class MTCNNDetector(object):
         feed_imgs = torch.stack(cropped_ims_tensors)
         feed_imgs = feed_imgs.to(self.device)
 
-        cls, reg = self.onet_detector(feed_imgs)
+        cls, reg, landmarks = self.onet_detector(feed_imgs)
         cls = cls.cpu().data.numpy()
         reg = reg.cpu().data.numpy()
+        landmarks = landmarks.cpu().data.numpy()
+
 
         keep_inds = np.where(cls[:, 1] > self.thresh[2])[0]
+
         if len(keep_inds) > 0:
             keep_bboxes = bboxes[keep_inds]
             keep_cls = cls[keep_inds, :]
             keep_reg = reg[keep_inds]
+            keep_landmarks = landmarks[keep_inds, :]
             keep_bboxes[:, 4] = keep_cls[:, 1].reshape((-1,))
         else:
             return None
         
+        # compute landmarks point
+        # width = keep_bboxes[:, 2] - bboxes[:, 0] + 1.0
+        # height = keep_bboxes[:, 3] - bboxes[:, 1] + 1.0
+        # xmin, ymin = bboxes[:, 0], bboxes[:, 1]
+
         bboxes_align = utils.calibrate_box(keep_bboxes, keep_reg)
         keep = utils.nms(bboxes_align, 0.7, mode='Minimum')
         
@@ -317,7 +326,9 @@ class MTCNNDetector(object):
 
         bboxes_align = bboxes_align[keep]
         bboxes_align = utils.convert_to_square(bboxes_align)
-        return bboxes_align
+        landmarks = keep_landmarks[keep]
+
+        return bboxes_align, landmarks
 
     def detect_face(self, img):
         ''' Detect face over image '''
@@ -345,7 +356,7 @@ class MTCNNDetector(object):
 
         # onet
         if self.onet_detector:
-            bboxes_align = self.detect_onet(img, bboxes_align)
+            bboxes_align, landmarks = self.detect_onet(img, bboxes_align)
             if bboxes_align is None:
                 return np.array([])
 
@@ -355,4 +366,4 @@ class MTCNNDetector(object):
                 "time cost " + '{:.3f}'.format(t1 + t2 + t3) + \
                         '  pnet {:.3f}  rnet {:.3f}  onet {:.3f}'.format(t1, t2, t3))
 
-        return bboxes_align
+        return bboxes_align, landmarks
